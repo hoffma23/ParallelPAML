@@ -1,0 +1,149 @@
+
+ 15         verbose | verbose                1.00
+  7         runmode | runmode                0.00
+  4         seqtype | seqtype                2.00
+ 13       CodonFreq | CodonFreq              2.00
+  9           clock | clock                  1.00
+ 18          aaDist | aaDist                 0.00
+ 19      aaRatefile | aaRatefile             1.00
+ 16           model | model                  3.00
+ 20         NSsites | NSsites                0.00
+ 22           icode | icode                  0.00
+ 23           Mgene | Mgene                  0.00
+ 24       fix_kappa | fix_kappa              0.00
+ 25           kappa | kappa                  2.00
+ 26       fix_omega | fix_omega              0.00
+ 27           omega | omega                  0.40
+ 28       fix_alpha | fix_alpha              1.00
+ 29           alpha | alpha                  0.00
+ 30          Malpha | Malpha                 0.00
+ 31           ncatG | ncatG                  5.00
+ 11           getSE | getSE                  0.00
+ 12    RateAncestor | RateAncestor           1.00
+ 36      Small_Diff | Small_Diff             0.00
+  6       cleandata | cleandata              1.00
+  8          method | method                 0.00
+AAML in paml version 4.6, August 2012
+
+ns = 23  	ls = 3248
+Reading sequences, sequential format..
+Reading seq # 1: Cyprinus_carpio     Reading seq # 2: Polymixia_japonica     Reading seq # 3: Tetraodon_nigroviridis     Reading seq # 4: Protopterus_aethiopicus     Reading seq # 5: Xenopus_tropicalis     Reading seq # 6: Struthio_camelus     Reading seq # 7: Ornithorhynchus_anatinus     Reading seq # 8: Homo_sapiens     Reading seq # 9: Plesiobatis_daviesi     Reading seq #10: Okamejei_kenojei     Reading seq #11: Amblyraja_radiata     Reading seq #12: Squalus_acanthias     Reading seq #13: Heterodontus_francisci     Reading seq #14: Scyliorhinus_canicula     Reading seq #15: Mustelus_manazo     Reading seq #16: Callorhinchus_milii     Reading seq #17: Callorhinchus_capensis     Reading seq #18: Callorhinchus_callorynchus     Reading seq #19: Hariotta_raleighana     Reading seq #20: Rhinochimaera_pacifica     Reading seq #21: Hydrolagus_lemures     Reading seq #22: Chimaera_sp     Reading seq #23: Chimaera_monstrosa     
+Sites with gaps or missing data are removed.
+
+     1 ambiguity characters in seq. 1
+     1 ambiguity characters in seq. 2
+     1 ambiguity characters in seq. 3
+     1 ambiguity characters in seq. 4
+     2 ambiguity characters in seq. 9
+6 sites are removed.  431 433 580 588 589 2852
+Sequences read..
+Counting site patterns..  0:00
+        1591 patterns at     3242 /     3242 sites (100.0%),  0:00
+Counting frequencies..
+
+     2024 bytes for distance
+   509120 bytes for conP
+        0 bytes for fhK
+  5000000 bytes for space
+
+TREE #  1
+(((1, (2, 3)), (4, (5, (6, (7, 8))))), (((9, (11, 10)), (12, (13, (14, 15)))), ((18, (16, 17)), ((19, 20), (21, (22, 23))))));   MP score: 6343
+  5600320 bytes for conP, adjusted
+
+
+Reading matrix from mtREV24.dat
+    0.803432    0.524205    0.627697    0.671088    0.650798    0.741510    0.672173    0.609413    0.864382    0.785855    0.518344    0.783441    0.756800    0.714629    0.542598    0.498617    0.778613    0.820528    0.824928    0.767419    0.690049    0.135366
+
+ntime & nrate & np:    22     0    22
+
+Bounds (np=22):
+   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000001   0.000100
+   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999   0.999999  99.000000
+
+np =    22
+lnL0 = -48424.092539
+
+Iterating by ming2
+Initial: fx= 48424.092539
+x=  0.80343  0.52421  0.62770  0.67109  0.65080  0.74151  0.67217  0.60941  0.86438  0.78585  0.51834  0.78344  0.75680  0.71463  0.54260  0.49862  0.77861  0.82053  0.82493  0.76742  0.69005  0.13537
+
+  1 h-m-p  0.0000 0.0000 70160.9989 +YCYCCCC 44612.380482  6 0.0000    38 | 0/22
+  2 h-m-p  0.0000 0.0001 4610.6234 ++    43442.759467  m 0.0001    63 | 0/22
+  3 h-m-p  0.0000 0.0000 2456.5088 
+h-m-p:      0.00000000e+00      0.00000000e+00      2.45650884e+03 43442.759467
+..  | 0/22
+  4 h-m-p  0.0000 0.0000 11637.1117 YCCC  43409.365502  3 0.0000   115 | 0/22
+  5 h-m-p  0.0000 0.0000 1316.2808 ++    43409.119024  m 0.0000   140 | 1/22
+  6 h-m-p  0.0000 0.0007 898.2074 ++YCCCC 43306.009700  4 0.0003   174 | 1/22
+  7 h-m-p  0.0000 0.0002 1341.6605 +YYYCCC 43244.390400  5 0.0002   207 | 1/22
+  8 h-m-p  0.0001 0.0003 342.9369 YCCCC 43237.162922  4 0.0001   239 | 1/22
+  9 h-m-p  0.0002 0.0039 197.1005 YCC   43229.530865  2 0.0005   267 | 1/22
+ 10 h-m-p  0.0008 0.0041  98.1237 CC    43228.625589  1 0.0002   294 | 1/22
+ 11 h-m-p  0.0005 0.0138  43.2370 YC    43227.629084  1 0.0011   320 | 1/22
+ 12 h-m-p  0.0008 0.0098  57.5189 CC    43226.915729  1 0.0007   347 | 1/22
+ 13 h-m-p  0.0006 0.0103  62.0015 YC    43225.591141  1 0.0013   373 | 1/22
+ 14 h-m-p  0.0007 0.0058 109.4918 CCC   43224.064292  2 0.0008   402 | 1/22
+ 15 h-m-p  0.0009 0.0048 105.5850 YCCC  43221.042947  3 0.0016   432 | 1/22
+ 16 h-m-p  0.0005 0.0027 133.7537 CCCC  43219.382919  3 0.0007   463 | 1/22
+ 17 h-m-p  0.0015 0.0076  47.0996 YCC   43218.472504  2 0.0009   491 | 1/22
+ 18 h-m-p  0.0027 0.0572  16.1273 YC    43214.402817  1 0.0052   517 | 1/22
+ 19 h-m-p  0.0027 0.0242  30.7825 YCCC  43192.887414  3 0.0047   547 | 1/22
+ 20 h-m-p  0.0008 0.0039 134.7257 YCCC  43142.078867  3 0.0015   577 | 1/22
+ 21 h-m-p  0.0004 0.0018 261.1702 +YCCC 43071.693891  3 0.0011   608 | 1/22
+ 22 h-m-p  0.0020 0.0102  73.2401 CCC   43069.488845  2 0.0008   637 | 1/22
+ 23 h-m-p  0.0055 0.0492  10.2916 CC    43069.368404  1 0.0015   664 | 1/22
+ 24 h-m-p  0.0117 0.9650   1.2991 +YC   43067.814114  1 0.0353   691 | 1/22
+ 25 h-m-p  0.0029 0.0220  15.9153 YCCC  43061.168062  3 0.0048   721 | 1/22
+ 26 h-m-p  0.0019 0.0152  38.9133 YC    43060.160875  1 0.0011   747 | 1/22
+ 27 h-m-p  0.0113 0.0989   3.9025 YC    43060.128931  1 0.0022   773 | 1/22
+ 28 h-m-p  0.0438 2.7559   0.1954 +YC   43054.572008  1 0.4191   800 | 1/22
+ 29 h-m-p  1.1907 5.9535   0.0466 YCC   43053.692243  2 0.7980   849 | 1/22
+ 30 h-m-p  1.6000 8.0000   0.0118 YC    43053.637645  1 1.0177   896 | 1/22
+ 31 h-m-p  1.6000 8.0000   0.0024 YC    43053.634662  1 0.9523   943 | 1/22
+ 32 h-m-p  1.6000 8.0000   0.0005 Y     43053.634467  0 0.9048   989 | 1/22
+ 33 h-m-p  1.6000 8.0000   0.0001 Y     43053.634463  0 1.0549  1035 | 1/22
+ 34 h-m-p  1.6000 8.0000   0.0000 C     43053.634463  0 1.5029  1081 | 1/22
+ 35 h-m-p  1.6000 8.0000   0.0000 Y     43053.634463  0 1.2751  1127 | 1/22
+ 36 h-m-p  1.6000 8.0000   0.0000 Y     43053.634463  0 1.0458  1173 | 1/22
+ 37 h-m-p  1.6000 8.0000   0.0000 C     43053.634463  0 0.4000  1219 | 1/22
+ 38 h-m-p  0.6853 8.0000   0.0000 Y     43053.634463  0 0.1713  1265 | 1/22
+ 39 h-m-p  0.1726 8.0000   0.0000 -------C 43053.634463  0 0.0000  1318
+Out..
+lnL  = -43053.634463
+1319 lfun, 0 EigenQcodon, 58036 P(t)
+
+Reconstructed ancestral states go into file rst.
+
+lnL = -43053.634463 from ProbSitePattern.
+Marginal reconstruction.
+	Node  24: lnL = -43053.634463
+	Node  25: lnL = -43053.634463
+	Node  26: lnL = -43053.634463
+	Node  27: lnL = -43053.634463
+	Node  28: lnL = -43053.634463
+	Node  29: lnL = -43053.634463
+	Node  30: lnL = -43053.634463
+	Node  31: lnL = -43053.634463
+	Node  32: lnL = -43053.634463
+	Node  33: lnL = -43053.634463
+	Node  34: lnL = -43053.634463
+	Node  35: lnL = -43053.634463
+	Node  36: lnL = -43053.634463
+	Node  37: lnL = -43053.634463
+	Node  38: lnL = -43053.634463
+	Node  39: lnL = -43053.634463
+	Node  40: lnL = -43053.634463
+	Node  41: lnL = -43053.634463
+	Node  42: lnL = -43053.634463
+	Node  43: lnL = -43053.634463
+	Node  44: lnL = -43053.634463
+	Node  45: lnL = -43053.634463
+
+lnL = -43053.634463 from ProbSitePattern.
+Joint reconstruction.
+
+ 22401280 bytes for conP, adjusted
+
+ 14000832 bytes for space, adjusted
+
+Time used:  0:36

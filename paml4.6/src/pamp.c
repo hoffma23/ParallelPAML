@@ -62,7 +62,7 @@ int LASTROUND=0; /* no use for this */
 #define NODESTRUCTURE
 #define RECONSTRUCTION
 #define PAMP
-#include "treesub.c"
+#include "treesub.cu"
 
 int main (int argc, char *argv[])
 {

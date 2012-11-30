@@ -212,7 +212,7 @@ char *clockstr[]={"", "Global clock", "Local clock", "ClockCombined"};
 enum {GlobalClock=1, LocalClock, ClockCombined} ClockModels;
 
 #define CODEML 1
-#include "treesub.c"
+#include "treesub.cu"
 #include "treespace.c"
 
 

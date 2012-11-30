@@ -125,7 +125,7 @@ int N_PMatUVRoot=0;
 
 
 #define BASEML 1
-#include "treesub.c"
+#include "treesub.cu"
 #include "treespace.c"
 
 int main (int argc, char *argv[])

@@ -46,7 +46,7 @@ struct TREEN {
 }  nodes[2*NS-1];
 
 #define NODESTRUCTURE
-#include "treesub.c"
+#include "treesub.cu"
 
 void main (int argc, char*argv[])
 {

@@ -66,7 +66,7 @@ double omega_NG, dN_NG, dS_NG;  /* what are these for? */
 
 #define YN00
 #define REALSEQUENCE
-#include "treesub.c"
+#include "treesub.cu"
 
 
 int main(int argc, char *argv[])

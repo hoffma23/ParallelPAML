@@ -59,7 +59,7 @@ int LASTROUND=0; /* not used */
 #define EVOLVER
 #define NODESTRUCTURE
 #define BIRTHDEATH
-#include "treesub.c"
+#include "treesub.cu"
 #include "treespace.c"
 
 void TreeDistances(FILE* fout);

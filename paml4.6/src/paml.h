@@ -263,7 +263,7 @@ int nls2 (FILE *fout, double *sx, double * x0, int nx,
 
 int ResetFinetuneSteps(FILE *fout, double Pjump[], double finetune[], int nsteps);
 
-/* tree structure functions in treesub.c */
+/* tree structure functions in treesub.cu */
 void NodeToBranch (void);
 void BranchToNode (void);
 void ClearNode (int inode);

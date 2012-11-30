@@ -1,0 +1,4 @@
+/var/torque/mom_priv/jobs/1541593.acm.SC: line 9: 15: command not found
+Took ${DIFF} time
+GPU result ${gpuOutput}
+CPU result ${cpuOutput}

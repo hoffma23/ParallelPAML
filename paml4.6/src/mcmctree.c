@@ -174,7 +174,7 @@ enum {SQRT_B=1, LOG_B, ARCSIN_B} B_Transforms;
 char *Btransform[]={"", "square root", "logarithm", "JC"};
 
 #define MCMCTREE  1
-#include "treesub.c"
+#include "treesub.cu"
 
 
 int main (int argc, char *argv[])

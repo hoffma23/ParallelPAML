@@ -77,7 +77,7 @@ enum {GlobalClock=1, LocalClock, ClockCombined} ClockModels;
 */
 #define BASEMLG
 int LASTROUND=0; /* no use for this */
-#include "treesub.c"
+#include "treesub.cu"
 
 int main (int argc, char *argv[])
 {
