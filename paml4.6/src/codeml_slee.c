@@ -3525,7 +3525,9 @@ int Qcodon2aa (double Qc[], double pic[], double Qaa[], double piaa[])
  __constant__ int z_dc[NS][NGENE*NCODE];
  __constant__ char CharaMap_dc[256][64];
  __constant__ int nodeConP_dc[NNODES]; // offset to conP
+ __constant__ int nChara_d[256];
  float * conP_d;
+ float * PMat_d;
  
 int initializeCuda(void) {
 	
@@ -3540,13 +3542,53 @@ int initializeCuda(void) {
 	cuda_ret = cudaMemcpyToSymbol(z_dc, com.z, NS * (NGENE + 1) * NCODE sizeof(int), cudaMemcpyHostToDevice);
 	if (cuda_ret != cudaSuccess) FATAL("Unable to copy z to constant memory");
 	
-	cuda_ret = cudaMemcpyToSymbol(CharaMap_dc, com.z, 256 * 64 * sizeof(int), cudaMemcpyHostToDevice);
+	cuda_ret = cudaMemcpyToSymbol(CharaMap_dc, CharaMap, 256 * 64 * sizeof(int), cudaMemcpyHostToDevice);
+	if (cuda_ret != cudaSuccess) FATAL("Unable to copy CharaMap to constant memory");
+	
+	cuda_ret = cudaMemcpyToSymbol(nChara_dc, nChara, 256 * sizeof(int), cudaMemcpyHostToDevice);
 	if (cuda_ret != cudaSuccess) FATAL("Unable to copy CharaMap to constant memory");
 	
 	cuda_ret = cudaMalloc(conP_d, com.sconP);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to allocate conP to constant memory");
+	if (cuda_ret != cudaSuccess) FATAL("Unable to allocate conP to global memory");
+	
+	cuda_ret = cudaMalloc(PMat_d, (nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double), cudaMemcpyHostToDevice);
+	if (cuda_ret != cudaSuccess) FATAL("Unable to allocate PMat to global memory");
+	
+	checkDevice();
+	
+	cudaBakeStreams();
+	
 	
 	return (0);
+}
+
+void checkDevice()
+{
+	cudaDeviceProp info;
+	int deviceName;
+	cudaGetDevice(&deviceName);
+	cudaGetDeviceProperties(&info,deviceName);
+	if (!info.deviceOverlap)
+	{
+		printf("Compute device can't use streams and should be discared.");
+		exit(EXIT_FAILURE);
+	}
+	async = info.asyncEngineCount;
+	printf("Async Engine Count: %d\n",async);
+}
+
+cudaStream_t stream0,stream1,stream2;
+void cudaBakeStreams()
+{
+	cudaStreamCreate(&stream0);
+	cudaStreamCreate(&stream1);
+	cudaStreamCreate(&stream2);//for async level 2, currently unused
+}
+void cudaDestroyStreams()
+{
+	cudaStreamDestroy(stream0);
+	cudaStreamDestroy(stream1);
+	cudaStreamDestroy(stream2);
 }
 
 /**
@@ -3566,6 +3608,9 @@ int getConPOffset(int inode) {
 int exitCuda() {
 
    free(conP_d);
+   free(PMat_d);
+   
+   cudaDestroyStreams();
 }
 
 /**
@@ -3596,7 +3641,11 @@ int ConditionalPNode (int inode, int igene, double x[])
       for(h=pos0; h<pos1; h++) 
          nodes[inode].conP[h*n+com.z[inode][h]] = 1;
 
-   for (i=0; i<nodes[inode].nson; i++) {
+/**
+ * SLEE
+ */
+   i = 0;
+   while (i<nodes[inode].nson) {
       ison = nodes[inode].sons[i];
       t = nodes[ison].branch * _rateSite;
       if(com.clock<5) {
@@ -3605,30 +3654,47 @@ int ConditionalPNode (int inode, int igene, double x[])
       }
 
       GetPMatBranch(PMat, x, t, ison);
-
-      if (nodes[ison].nson<1 && com.cleandata) {        /* tip && clean */
-         for(h=pos0; h<pos1; h++)
-            for(j=0; j<n; j++)
-               nodes[inode].conP[h*n+j] *= PMat[j*n+com.z[ison][h]];
-      }
-      else if (nodes[ison].nson<1 && !com.cleandata) {  /* tip & unclean */
-         for(h=pos0; h<pos1; h++)
-            for(j=0; j<n; j++) {
-               for(k=0,t=0; k<nChara[com.z[ison][h]]; k++)
-                  t += PMat[j*n+CharaMap[com.z[ison][h]][k]];
-               nodes[inode].conP[h*n+j] *= t;
-            }
-      }
-      else {                                            /* internal node */
-         for(h=pos0; h<pos1; h++)
-            for(j=0; j<n; j++) {
-               for(k=0,t=0; k<n; k++)
-                  t += PMat[j*n+k]*nodes[ison].conP[h*n+k];
-               nodes[inode].conP[h*n+j] *= t;
-            }
-      }
+	  
+	  cudaMemcpyAsync(PMat_d, PMat,(nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double),cudaMemcpyHostToDevice,stream0);
+	  
+	  dim3 gridSize, blockSize; /// to be declared
+	  
+		if (nodes[ison].nson<1 && com.cleandata) {
+			kernel0<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		} (nodes[ison].nson<1 && !com.cleandata) {  
+			kernel1<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		} else {                                          
+			kernel2<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		}
+	  
+	  i++;
+	  if (i < nodes[inode].nson) {
+		ison = nodes[inode].sons[i];
+		t = nodes[ison].branch * _rateSite;
+		if(com.clock<5) {
+			if(com.clock)  t *= GetBranchRate(igene,(int)nodes[ison].label,x,NULL);
+			else           t *= com.rgene[igene];
+		}
+			  
+		GetPMatBranch(PMat, x, t, ison);
+		
+		cudaMemcpyAsync(PMat_d, PMat,(nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double),cudaMemcpyHostToDevice,stream0);
+		
+		if (nodes[ison].nson<1 && com.cleandata) {
+			kernel0<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		} (nodes[ison].nson<1 && !com.cleandata) {  
+			kernel1<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		} else {                                          
+			kernel2<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
+		}
+	}
 
    }        /*  for (ison)  */
+	 
+ /**
+  * slee
+  */
+ 
    if(com.NnodeScale && com.nodeScale[inode]) 
       NodeScale(inode, pos0, pos1);
 

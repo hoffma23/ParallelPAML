@@ -6706,6 +6706,7 @@ int fx_r (double x[], int np)
    return(0);
 }
 
+extern getconPOffset(int inode);
 
 double lfun (double x[], int np)
 {
@@ -6722,6 +6723,21 @@ double lfun (double x[], int np)
          SetPGene(ig,1,1,0,x);
       ConditionalPNode (tree.root, ig, x);
 
+	  /**
+	   * SLEE
+	   */
+	   
+	// h=com.posG[ig]..com.posG[ig+1]
+	// i= 0..com.ncode
+	
+	int offset = getConPOffset(tree.root);
+	
+	cudaMemcpy(nodes[tree.root].conP, conP_d[offset], (com.posG[ig+1] - com.posG[ig])*com.ncode * sizeof(double), cudaMemcpyDeviceToHost);
+	/**
+	 * slee
+	 **/
+	 
+	 
       for(h=com.posG[ig]; h<com.posG[ig+1]; h++) {
          if (com.fpatt[h]<=0 && com.print>=0) continue;
          for(i=0,fh=0; i<com.ncode; i++)
