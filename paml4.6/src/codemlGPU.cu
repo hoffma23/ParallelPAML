@@ -93,15 +93,6 @@ void SimulateData2s61(void);
 void Ina(void);
 void d4dSdN(FILE*fout);
 
-/**
- * SLEE
- **/
- 
- int initializeCuda(void);
- int getConPOffset(int inode);
-/**
- * slee
- **/
 struct common_info {
    char *z[NS], *spname[NS], seqf[128],outf[128],treef[128],daafile[128], cleandata;
    char oldconP[NNODE];       /* update conP for nodes? to save computation */
@@ -221,7 +212,7 @@ char *clockstr[]={"", "Global clock", "Local clock", "ClockCombined"};
 enum {GlobalClock=1, LocalClock, ClockCombined} ClockModels;
 
 #define CODEML 1
-#include "treesub.cu"
+#include "treesub.c"
 #include "treespace.c"
 
 
@@ -230,7 +221,6 @@ int ncatG0=10, insmodel=0, nnsmodels=1, nsmodels[15]={0};
 /* used for sliding windows analysis */
 int windowsize0=20, offset0=1, npositive=0;
 double lnLmodel;
-int int_count;
 
 int main (int argc, char *argv[])
 {
@@ -242,8 +232,7 @@ int main (int argc, char *argv[])
                      "diff. rate & k&w", "diff. rate & pi & k&w"};
    int getdistance=1, i, k, s2=0, idata, nc, nUVR, cleandata0;
 
-	int int_count = 0;
-	
+
 #ifdef NSSITESBandits
    atexit(finishup);
 #endif
@@ -834,8 +823,6 @@ int Forestry (FILE *fout)
 */
 #endif
 
-	printf("int_count = %d\n", int_count);
-	
       FPN(fout); OutTreeN(fout,0,1);  FPN(fout);
       FPN(fout); OutTreeN(fout,1,1);  FPN(fout);
       if(com.clock) {
@@ -3512,110 +3499,23 @@ int Qcodon2aa (double Qc[], double pic[], double Qaa[], double piaa[])
    return (0);
 }
 
-/**
- * SLEE
- **/
- 
-/**
- * copy to CUDA constant memory
- **/
- 
- __constant__ int n_dc;
- //__constant__ int posG_dc[NGENE+1];
- __constant__ int z_dc[NS][NGENE*NCODE];
- __constant__ char CharaMap_dc[256][64];
- __constant__ int nodeConP_dc[NNODES]; // offset to conP
- __constant__ int nChara_d[256];
- float * conP_d;
- float * PMat_d;
- 
-int initializeCuda(void) {
-	
-	cudaError cuda_ret;
-	
-	cuda_ret = cudaMemcpyToSymbol(n_dc, com.ncode, sizeof(int), cudaMemcpyHostToDevice);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to copy n to constant memory");
-	
-//	cuda_ret = cudaMemcpyToSymbol(posG_dc, com.posG, (NGENE+1)*sizeof(int), cudaMemcpyHostToDevice);
-//	if (cuda_ret != cudaSuccess) FATAL("Unable to copy posG to constant memory");
-	
-	cuda_ret = cudaMemcpyToSymbol(z_dc, com.z, NS * (NGENE + 1) * NCODE sizeof(int), cudaMemcpyHostToDevice);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to copy z to constant memory");
-	
-	cuda_ret = cudaMemcpyToSymbol(CharaMap_dc, CharaMap, 256 * 64 * sizeof(int), cudaMemcpyHostToDevice);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to copy CharaMap to constant memory");
-	
-	cuda_ret = cudaMemcpyToSymbol(nChara_dc, nChara, 256 * sizeof(int), cudaMemcpyHostToDevice);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to copy CharaMap to constant memory");
-	
-	cuda_ret = cudaMalloc(conP_d, com.sconP);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to allocate conP to global memory");
-	
-	cuda_ret = cudaMalloc(PMat_d, (nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double), cudaMemcpyHostToDevice);
-	if (cuda_ret != cudaSuccess) FATAL("Unable to allocate PMat to global memory");
-	
-	checkDevice();
-	
-	cudaBakeStreams();
-	
-	
-	return (0);
-}
-
-void checkDevice()
+// Here we start GPUing
+__global__ void TCconP(double *PMat_d, double *conP_d, char *z_d, int pos0, int pos1, int n)
 {
-	cudaDeviceProp info;
-	int deviceName;
-	cudaGetDevice(&deviceName);
-	cudaGetDeviceProperties(&info,deviceName);
-	if (!info.deviceOverlap)
-	{
-		printf("Compute device can't use streams and should be discared.");
-		exit(EXIT_FAILURE);
-	}
-	async = info.asyncEngineCount;
-	printf("Async Engine Count: %d\n",async);
+   int i = blockIdx.x*blockDim.x + threadIdx.x;
+   if(i<(n*(pos1-pos0)))
+   {
+      i += pos0*n;
+      // if other functions in parallel with this might have to atomicMult
+      conP_d[i] *= PMat_d[ (i%n)*n + z_d[i/n] ];
+   }
 }
 
-cudaStream_t stream0,stream1,stream2;
-void cudaBakeStreams()
+__global__ void TnCconP(double *PMat_d, double *conP_d, char *z_d, int pos0, int pos1, int n, double t)
 {
-	cudaStreamCreate(&stream0);
-	cudaStreamCreate(&stream1);
-	cudaStreamCreate(&stream2);//for async level 2, currently unused
-}
-void cudaDestroyStreams()
-{
-	cudaStreamDestroy(stream0);
-	cudaStreamDestroy(stream1);
-	cudaStreamDestroy(stream2);
+
 }
 
-/**
- * getConPOffset
- * returns the offset from conP_d for nodes[inode].conP in the kernel
- * note: update to nodes[inode].conP[h*n+j] => conP_d[offset + h*n + j]
- **/
- 
-int getConPOffset(int inode) {
-
-	if (nodes[inode].conP - com.conP >= 0)
-		return (nodes[inode].conP - com.conP);
-	
-	return -1;
-}
-
-int exitCuda() {
-
-   free(conP_d);
-   free(PMat_d);
-   
-   cudaDestroyStreams();
-}
-
-/**
- * slee
- **/
 int ConditionalPNode (int inode, int igene, double x[])
 {
    int n=com.ncode, i,j,k,h, ison, pos0=com.posG[igene], pos1=com.posG[igene+1];
@@ -3625,12 +3525,6 @@ int ConditionalPNode (int inode, int igene, double x[])
       if(nodes[nodes[inode].sons[i]].nson>0 && !com.oldconP[nodes[inode].sons[i]])
          ConditionalPNode(nodes[inode].sons[i], igene, x);
 
-	/**
-	 * SLEE
-	 **/
-	 
-	int offset_d = getConPOffset(inode);
-	
    if(inode<com.ns)
       for(h=pos0*n; h<pos1*n; h++)
          nodes[inode].conP[h] = 0; /* young ancestor */
@@ -3641,11 +3535,7 @@ int ConditionalPNode (int inode, int igene, double x[])
       for(h=pos0; h<pos1; h++) 
          nodes[inode].conP[h*n+com.z[inode][h]] = 1;
 
-/**
- * SLEE
- */
-   i = 0;
-   while (i<nodes[inode].nson) {
+   for (i=0; i<nodes[inode].nson; i++) {
       ison = nodes[inode].sons[i];
       t = nodes[ison].branch * _rateSite;
       if(com.clock<5) {
@@ -3654,47 +3544,30 @@ int ConditionalPNode (int inode, int igene, double x[])
       }
 
       GetPMatBranch(PMat, x, t, ison);
-	  
-	  cudaMemcpyAsync(PMat_d, PMat,(nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double),cudaMemcpyHostToDevice,stream0);
-	  
-	  dim3 gridSize, blockSize; /// to be declared
-	  
-		if (nodes[ison].nson<1 && com.cleandata) {
-			kernel0<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		} (nodes[ison].nson<1 && !com.cleandata) {  
-			kernel1<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		} else {                                          
-			kernel2<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		}
-	  
-	  i++;
-	  if (i < nodes[inode].nson) {
-		ison = nodes[inode].sons[i];
-		t = nodes[ison].branch * _rateSite;
-		if(com.clock<5) {
-			if(com.clock)  t *= GetBranchRate(igene,(int)nodes[ison].label,x,NULL);
-			else           t *= com.rgene[igene];
-		}
-			  
-		GetPMatBranch(PMat, x, t, ison);
-		
-		cudaMemcpyAsync(PMat_d, PMat,(nc*nc+nUVR*nc*nc*2+nUVR*nc)*sizeof(double),cudaMemcpyHostToDevice,stream0);
-		
-		if (nodes[ison].nson<1 && com.cleandata) {
-			kernel0<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		} (nodes[ison].nson<1 && !com.cleandata) {  
-			kernel1<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		} else {                                          
-			kernel2<<<gridSize, blockSize, 0, stream0>>>(PMat, ison, offset_d);
-		}
-	}
+
+      if (nodes[ison].nson<1 && com.cleandata) {        /* tip && clean */
+         for(h=pos0; h<pos1; h++)
+            for(j=0; j<n; j++)
+               nodes[inode].conP[h*n+j] *= PMat[j*n+com.z[ison][h]];
+      }
+      else if (nodes[ison].nson<1 && !com.cleandata) {  /* tip & unclean */
+         for(h=pos0; h<pos1; h++)
+            for(j=0; j<n; j++) {
+               for(k=0,t=0; k<nChara[com.z[ison][h]]; k++)
+                  t += PMat[j*n+CharaMap[com.z[ison][h]][k]];
+               nodes[inode].conP[h*n+j] *= t;
+            }
+      }
+      else {                                            /* internal node */
+         for(h=pos0; h<pos1; h++)
+            for(j=0; j<n; j++) {
+               for(k=0,t=0; k<n; k++)
+                  t += PMat[j*n+k]*nodes[ison].conP[h*n+k];
+               nodes[inode].conP[h*n+j] *= t;
+            }
+      }
 
    }        /*  for (ison)  */
-	 
- /**
-  * slee
-  */
- 
    if(com.NnodeScale && com.nodeScale[inode]) 
       NodeScale(inode, pos0, pos1);
 

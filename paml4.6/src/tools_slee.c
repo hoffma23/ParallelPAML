@@ -6002,7 +6002,11 @@ int gradientB (int n, double x[], double f0, double g[],
 
 extern FILE *frst;
 
+   /**
+    * SLEE
+	**/
 extern initializeCuda();
+extern exitCuda();
 
 int ming2 (FILE *fout, double *f, double (*fun)(double x[], int n),
     int (*dfun)(double x[], double *f, double dx[], int n),
@@ -6196,6 +6200,13 @@ for(i=0; i<n; i++) fprintf(frst,"%9.2f", g[i]); FPN(frst);
       xtoy(H, space, n*n);  /* H has variance matrix, or inverse of Hessian */
       return(1);
    }
+   
+   /**
+    * SLEE
+	*/
+	
+	exitCuda();
+   
    return(0);
 }
 
